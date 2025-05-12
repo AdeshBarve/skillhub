@@ -1,5 +1,6 @@
 // api/middleware/roleMiddleware.js
 const authorizeRoles = (...allowedRoles) => {
+  try {
     return (req, res, next) => {
       const user = req.user; // assuming JWT decoded user is in req.user
       if (!allowedRoles.includes(user.role)) {
@@ -7,6 +8,9 @@ const authorizeRoles = (...allowedRoles) => {
       }
       next();
     };
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
   };
   
   module.exports = authorizeRoles;

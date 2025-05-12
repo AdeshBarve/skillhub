@@ -33,11 +33,19 @@ const jwt = require('jsonwebtoken');
       res.status(500).json({ message: err.message });
     }
   }
-
+  
+const enrolledCourses =  async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).populate('enrolledCourses');
+  res.json(user.enrolledCourses);
+  } catch (error) {
+      res.json({"Error : ":error.message});
+  }
+  
+} 
 
   const Login=async (req, res) => {
     const { email, password } = req.body;
-  console.log("Email :",email);
     try {
       const user = await User.findOne({ email });
       if (!user) return res.status(400).json({ message: 'Invalid email or password' });
@@ -74,21 +82,66 @@ const getMyCourses = async (req, res) => {
   }
 };
 
+const getAllCourses = async (req, res) => {
+  try {
+    const courses = await Course.find();
+    res.status(200).json(courses);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching your courses' });
+  }
+};
+
+
+const enrollCourse= async (req, res) => {
+  try {
+    const userId = req.user.id; // From JWT middleware
+    const courseId = req.params.id;
+
+    const course = await Course.findById(courseId);
+    if (!course) return res.status(404).json({ message: 'Course not found' });
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Prevent duplicate enrollment
+    if (user.enrolledCourses.includes(courseId)) {
+      return res.status(400).json({ message: 'Already enrolled' });
+    }
+
+    user.enrolledCourses.push(courseId);
+    await user.save();
+
+    res.status(200).json({ message: 'Enrolled successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
 // @desc    Create a new course
 const createCourse = async (req, res) => {
   try {
-    const { title, description } = req.body;
+    const thumbnail = req.files?.thumbnail?.[0]?.path || null;
+    const videoUrl = req.files?.video?.[0]?.path || null;
+    
+    if (!videoUrl) {
+      return res.status(400).json({ message: 'Video is required' });
+    }
+
     const course = new Course({
-      title,
-      description,
+      title: req.body.title,
+      description: req.body.description,
+      thumbnail,
+      videoUrl,
       instructor: req.user._id
     });
+
     await course.save();
-    res.status(201).json({ message: 'Course created', course });
+    res.status(201).json({ message: 'Course created successfully', course });
   } catch (error) {
-    res.status(500).json({ message: 'Error creating course' });
+    res.status(500).json({ message: error.message });
   }
 };
+
+
 
 // @desc    Edit a course (only by owner instructor)
 const updateCourse = async (req, res) => {
@@ -133,4 +186,4 @@ const deleteCourse = async (req, res) => {
 
 
 
-  module.exports={Signup,Login,createCourse,deleteCourse,updateCourse,getMyCourses};
+  module.exports={getAllCourses,enrolledCourses,enrollCourse, Signup,Login,createCourse,deleteCourse,updateCourse,getMyCourses};

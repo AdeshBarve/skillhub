@@ -1,62 +1,43 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Home from './pages/Home';
+import Login from './pages/Login';
+import Logout from './pages/Logout';
+import Signup from './pages/Signup';
+import About from './pages/About'; // Assuming you want an About page
+import StudentDashboard from './pages/StudentDashboard';
+import InstructorDashboard from './pages/InstructorDashboard';
+import Navbar from './components/Navbar';
+import Dashboard from './pages/Dashboard'; // Assuming there's a Dashboard page after login
+import NotFound from './components/NotFound'; // For a 404 page
+import { useAuth } from './context/AuthContext';
+import CourseDetails from './pages/CourseDetails';
 
-function App() {
-  const [users, setUsers] = useState([]);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    skills: "",
-    bio: "",
-    github: "",
-    linkedin: ""
-  });
 
-  useEffect(() => {
-    axios.get("/api/users").then(res => setUsers(res.data));
-  }, []);
+// Optional: Import global styles (if you have any)
+import './App.css';
+// import { AuthProvider } from './context/AuthContext';
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const newUser = { ...formData, skills: formData.skills.split(",") };
-    const res = await axios.post("/api/users", newUser);
-    setUsers([...users, res.data]);
-    setFormData({ name: "", email: "", skills: "", bio: "", github: "", linkedin: "" });
-  };
-
-  const handleDelete = async (id) => {
-    await axios.delete(`/api/users/${id}`);
-    setUsers(users.filter(u => u._id !== id));
-  };
+const App = () => {
+  const { user } = useAuth();
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>SkillHub - Student Skill Showcase</h1>
-
-      <form onSubmit={handleSubmit}>
-        <input name="name" value={formData.name} onChange={handleChange} placeholder="Name" />
-        <input name="email" value={formData.email} onChange={handleChange} placeholder="Email" />
-        <input name="skills" value={formData.skills} onChange={handleChange} placeholder="Skills (comma separated)" />
-        <input name="bio" value={formData.bio} onChange={handleChange} placeholder="Bio" />
-        <input name="github" value={formData.github} onChange={handleChange} placeholder="GitHub URL" />
-        <input name="linkedin" value={formData.linkedin} onChange={handleChange} placeholder="LinkedIn URL" />
-        <button type="submit">Add User</button>
-      </form>
-
-      <ul>
-        {users.map(u => (
-          <li key={u._id}>
-            <strong>{u.name}</strong> - {u.skills.join(", ")} - <a href={u.github}>GitHub</a>
-            <button onClick={() => handleDelete(u._id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Router>
+              <Navbar /> {/* Add this line here */}
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/logout" element={<Logout />} />
+        <Route path="/courses/:id" element={<CourseDetails />} />
+        {user?.role === 'student' && <Route path="/dashboard" element={<StudentDashboard />} />}
+        {user?.role === 'instructor' && <Route path="/dashboard" element={<InstructorDashboard />} />}
+        
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
