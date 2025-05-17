@@ -11,7 +11,6 @@ const Home = () => {
     const fetchCourses = async () => {
       try {
         const res = await axios.get('http://localhost:5000/api/auth/course/getAllCourses');
-        
         setCourses(res.data);
       } catch (err) {
         console.error('Error fetching courses:', err);
@@ -49,10 +48,11 @@ const Home = () => {
                 className="cursor-pointer"
               >
                 <CourseCard
-                  title={course.title}
-                  instructor={course.instructor}
-                  image={course.image || '/default-course.jpg'}
-                />
+  title={course.title}
+  instructor={course.instructor?.name || 'Unknown Instructor'}
+  image={course.thumbnail || '/default-course.jpg'} // Assuming field is "thumbnail"
+/>
+
               </div>
             ))}
           </div>

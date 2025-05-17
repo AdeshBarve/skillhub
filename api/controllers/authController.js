@@ -73,23 +73,33 @@ const enrolledCourses =  async (req, res) => {
 
 
 // @desc    Get instructor's own courses
-const getMyCourses = async (req, res) => {
+const getInsCourses = async (req, res) => {
   try {
-    const courses = await Course.find({ instructor: req.user._id });
+    const courses = await Course.find({ instructor: req.params.id });
+    res.status(200).json(courses);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+const getCourse = async (req, res) => {
+  try {
+    const courses = await Course.find({_id:req.params.id});
     res.status(200).json(courses);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching your courses' });
   }
 };
 
+
 const getAllCourses = async (req, res) => {
   try {
-    const courses = await Course.find();
+    const courses = await Course.find().populate('instructor', 'name email'); // populate name & email
     res.status(200).json(courses);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching your courses' });
+    res.status(500).json({ message: 'Error fetching courses', error: error.message });
   }
 };
+
 
 
 const enrollCourse= async (req, res) => {
@@ -186,4 +196,4 @@ const deleteCourse = async (req, res) => {
 
 
 
-  module.exports={getAllCourses,enrolledCourses,enrollCourse, Signup,Login,createCourse,deleteCourse,updateCourse,getMyCourses};
+  module.exports={getAllCourses,getCourse,enrolledCourses,enrollCourse, Signup,Login,createCourse,deleteCourse,updateCourse,getInsCourses};

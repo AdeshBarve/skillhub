@@ -10,22 +10,26 @@ const CourseDetails = () => {
   const { token } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchCourse = async () => {
-      try {
-        const res = await axios.get(`http://localhost:5000/api/auth/course/getAllCourses/${id}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setCourse(res.data);
-      } catch (err) {
-        setError('Could not fetch course');
-      }
-    };
+useEffect(() => {
+  const fetchCourse = async () => {
+    try {
+      const res = await axios.get(`http://localhost:5000/api/auth/course/getCourse/${id}`);
+      console.log("Course:", res.data);
 
-    fetchCourse();
-  }, [id, token]);
+      // ✅ Fix: Access the first item from the array
+      if (Array.isArray(res.data) && res.data.length > 0) {
+        setCourse(res.data[0]);
+      } else {
+        setError('Course not found');
+      }
+    } catch (err) {
+      setError('Could not fetch course');
+    }
+  };
+
+  fetchCourse();
+}, [id, token]);
+
 
   const handleEnroll = async () => {
     try {

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const { Signup, Login, createCourse, updateCourse, deleteCourse, getMyCourses, enrollCourse, enrolledCourses, getAllCourses } = require('../controllers/authController');
+const { Signup, Login, createCourse, updateCourse, deleteCourse, getMyCourses, enrollCourse, enrolledCourses, getAllCourses, getCourse, getInsCourses } = require('../controllers/authController');
 const authenticate = require('../middlewares/authMiddleware');
 const authorizeRoles = require('../middlewares/roleMiddleware');
 const upload = require('../middlewares/cloudinaryUpload');
@@ -21,7 +21,9 @@ router.post('/course/createCourse', authenticate, authorizeRoles('instructor'),u
   router.post('/course/enroll/:id',authenticate, enrollCourse);
   router.post('/course/updateCourse/:id',authenticate, authorizeRoles('instructor'),updateCourse);
   router.get('/course/deleteCourse',authenticate, authorizeRoles('instructor'),deleteCourse);
-  router.get('/course/getCourses/:id',getMyCourses);
+  router.get('/course/getInsCourses/:id',getInsCourses);
+    router.get('/course/getCourse/:id',getCourse);
+
 // GET /api/users/enrolled
 router.get('/course/enrolled',authenticate,enrolledCourses);
 router.get('/course/getAllCourses',getAllCourses);
