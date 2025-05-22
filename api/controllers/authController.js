@@ -117,7 +117,6 @@ const enrollCourse= async (req, res) => {
     if (user.enrolledCourses.includes(courseId)) {
       return res.status(400).json({ message: 'Already enrolled' });
     }
-
     user.enrolledCourses.push(courseId);
     await user.save();
 
@@ -157,19 +156,34 @@ const createCourse = async (req, res) => {
 const updateCourse = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
-
     if (!course) return res.status(404).json({ message: 'Course not found' });
 
     if (course.instructor.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Not allowed to edit this course' });
     }
 
+    // Update fields
     course.title = req.body.title || course.title;
     course.description = req.body.description || course.description;
+    course.price = req.body.price !== undefined ? req.body.price : course.price;
 
-    const updated = await course.save();
-    res.status(200).json(updated);
+    if (req.body.tags) {
+      course.tags = req.body.tags.split(',').map(tag => tag.trim());
+    }
+
+    // Cloudinary upload middleware should populate req.files or req.file
+    if (req.files?.thumbnail && req.files.thumbnail[0]?.path) {
+      course.thumbnail = req.files.thumbnail[0].path;
+    }
+
+    if (req.files?.video && req.files.video[0]?.path) {
+      course.video = req.files.video[0].path;
+    }
+
+    const updatedCourse = await course.save();
+    res.status(200).json(updatedCourse);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Error updating course' });
   }
 };

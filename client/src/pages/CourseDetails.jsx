@@ -58,7 +58,7 @@ useEffect(() => {
       <h2 className="text-3xl font-bold mb-4">{course.title}</h2>
       <p className="text-gray-600 mb-2"><strong>Instructor:</strong> {course.instructor}</p>
       <p className="text-gray-700 mb-4"><strong>Description:</strong> {course.description}</p>
-      <p className="text-green-600 font-semibold mb-6"><strong>Price:</strong> ₹{course.amount}</p>
+      <p className="text-green-600 font-semibold mb-6"><strong>Price:</strong> ₹{course.price}</p>
 
       <button
         onClick={handleEnroll}

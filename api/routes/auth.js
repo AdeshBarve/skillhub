@@ -19,7 +19,7 @@ router.post('/course/createCourse', authenticate, authorizeRoles('instructor'),u
   ])
   , createCourse);
   router.post('/course/enroll/:id',authenticate, enrollCourse);
-  router.post('/course/updateCourse/:id',authenticate, authorizeRoles('instructor'),updateCourse);
+  router.put('/course/updateCourse/:id',authenticate, authorizeRoles('instructor'),updateCourse);
   router.get('/course/deleteCourse',authenticate, authorizeRoles('instructor'),deleteCourse);
   router.get('/course/getInsCourses/:id',getInsCourses);
     router.get('/course/getCourse/:id',getCourse);
