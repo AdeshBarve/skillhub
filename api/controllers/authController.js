@@ -1,6 +1,7 @@
 const Course = require("../models/Course");
 const User = require("../models/User");
 const jwt = require('jsonwebtoken');
+const cloudinary = require('cloudinary').v2;
 
  const Signup=async (req, res) => {
     const { name, email, password, role } = req.body;
@@ -44,6 +45,33 @@ const enrolledCourses =  async (req, res) => {
   
 } 
 
+const deleteEnrolledCourse = async(req,res)=>{
+  try {
+    const userId = req.user.id;
+    const { courseId } = req.params;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const originalLength = user.enrolledCourses.length;
+    user.enrolledCourses = user.enrolledCourses.filter(
+      (id) => id.toString() !== courseId
+    );
+
+    if (user.enrolledCourses.length === originalLength) {
+      return res.status(400).json({ error: 'Course not found in enrolled list' });
+    }
+
+    await user.save();
+    return res.json({ message: 'Successfully unenrolled from course' });
+
+  } catch (err) {
+    console.error('Error during course unenrollment:', err);
+    return res.status(500).json({ error: 'Server error' });
+  }
+
+}
+
   const Login=async (req, res) => {
     const { email, password } = req.body;
     try {
@@ -71,7 +99,21 @@ const enrolledCourses =  async (req, res) => {
     }
   }
 
+const deleteInsCourse = async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+    if (!course) return res.status(404).json({ message: 'Course not found' });
+    if (course.instructor.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Unauthorized' });
+    }
 
+    await Course.findByIdAndDelete(req.params.id);
+    res.status(200).json({ message: 'Course deleted successfully' });
+  } catch (err) {
+    console.error('Error deleting course:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+}
 // @desc    Get instructor's own courses
 const getInsCourses = async (req, res) => {
   try {
@@ -106,15 +148,22 @@ const enrollCourse= async (req, res) => {
   try {
     const userId = req.user.id; // From JWT middleware
     const courseId = req.params.id;
-
     const course = await Course.findById(courseId);
-    if (!course) return res.status(404).json({ message: 'Course not found' });
+    if (!course){
+      console.log("Course not found");
+      return res.status(404).json({ message: 'Course not found' });
+    } 
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    if (!user){
+            console.log("User not found: ");
+return res.status(404).json({ message: 'User not found' });
 
+    } 
     // Prevent duplicate enrollment
     if (user.enrolledCourses.includes(courseId)) {
+                  console.log("Already enrolled ");
+
       return res.status(400).json({ message: 'Already enrolled' });
     }
     user.enrolledCourses.push(courseId);
@@ -122,7 +171,7 @@ const enrollCourse= async (req, res) => {
 
     res.status(200).json({ message: 'Enrolled successfully' });
   } catch (err) {
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error :' ,err });
   }
 };
 // @desc    Create a new course
@@ -150,9 +199,24 @@ const createCourse = async (req, res) => {
   }
 };
 
+const getInstructorName=async(req,res)=>{
 
+  try{
+    const id=req.params.id;
+  const instructor=await User.findById(id);
+        res.status(201).json(instructor);
+
+  }catch(err){
+    res.status(500).json({ message: err.message });
+    console.log("Error:",err.message);
+  }
+  
+
+
+}
 
 // @desc    Edit a course (only by owner instructor)
+
 const updateCourse = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
@@ -162,7 +226,7 @@ const updateCourse = async (req, res) => {
       return res.status(403).json({ message: 'Not allowed to edit this course' });
     }
 
-    // Update fields
+    // Update basic fields
     course.title = req.body.title || course.title;
     course.description = req.body.description || course.description;
     course.price = req.body.price !== undefined ? req.body.price : course.price;
@@ -171,22 +235,56 @@ const updateCourse = async (req, res) => {
       course.tags = req.body.tags.split(',').map(tag => tag.trim());
     }
 
-    // Cloudinary upload middleware should populate req.files or req.file
-    if (req.files?.thumbnail && req.files.thumbnail[0]?.path) {
-      course.thumbnail = req.files.thumbnail[0].path;
+    // Handle thumbnail upload
+    if (req.files?.thumbnail?.[0]?.path) {
+      const thumbnailUpload = await cloudinary.uploader.upload(req.files.thumbnail[0].path, {
+        folder: 'courses/thumbnails',
+        resource_type: 'image',
+      });
+
+      course.thumbnail = thumbnailUpload.secure_url;
+      course.thumbnailPublicId = thumbnailUpload.public_id;
     }
 
-    if (req.files?.video && req.files.video[0]?.path) {
-      course.video = req.files.video[0].path;
+    // Handle video upload
+    if (req.files?.video?.[0]?.path) {
+      const videoUpload = await cloudinary.uploader.upload(req.files.video[0].path, {
+        folder: 'courses/videos',
+        resource_type: 'video',
+      });
+
+      course.video = videoUpload.secure_url;
+      course.videoPublicId = videoUpload.public_id;
     }
 
     const updatedCourse = await course.save();
     res.status(200).json(updatedCourse);
   } catch (error) {
-    console.error(error);
+    console.error('Error updating course:', error.message);
     res.status(500).json({ message: 'Error updating course' });
   }
 };
+
+// const deleteEnrolledCourse=async(req,res)=>{
+//   try {
+//     const userId = req.user.id;
+//     const { courseId } = req.params;
+
+//     const user = await User.findById(userId);
+//     if (!user) return res.status(404).json({ error: 'User not found' });
+
+//     // Remove the course from enrolledCourses
+//     user.enrolledCourses = user.enrolledCourses.filter(
+//       (id) => id.toString() !== courseId
+//     );
+//     await user.save();
+
+//     res.json({ message: 'Unenrolled from course successfully' });
+//   } catch (err) {
+//     console.error('Unenroll error:', err);
+//     res.status(500).json({ error: 'Server error while unenrolling' });
+//   }
+// }
 
 // @desc    Delete a course (only by owner instructor)
 const deleteCourse = async (req, res) => {
@@ -210,4 +308,4 @@ const deleteCourse = async (req, res) => {
 
 
 
-  module.exports={getAllCourses,getCourse,enrolledCourses,enrollCourse, Signup,Login,createCourse,deleteCourse,updateCourse,getInsCourses};
+  module.exports={getInstructorName,deleteInsCourse, deleteEnrolledCourse,getAllCourses,getCourse,enrolledCourses,enrollCourse, Signup,Login,createCourse,deleteCourse,updateCourse,getInsCourses};
