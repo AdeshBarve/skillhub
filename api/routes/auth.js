@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const { Signup, Login, createCourse, updateCourse, deleteCourse, enrollCourse, enrolledCourses, getAllCourses, getCourse, getInsCourses, deleteEnrolledCourse, deleteInsCourse, getInstructorName } = require('../controllers/authController');
+const { Signup, Login, createCourse, updateCourse, deleteCourse, enrollCourse, enrolledCourses, getAllCourses, getCourse, getInsCourses, deleteEnrolledCourse, deleteInsCourse, getInstructorName, userContact } = require('../controllers/authController');
 const authenticate = require('../middlewares/authMiddleware');
 const authorizeRoles = require('../middlewares/roleMiddleware');
 const upload = require('../middlewares/cloudinaryUpload');
@@ -37,7 +37,7 @@ router.get('/course/enrolled',authenticate,enrolledCourses);
 router.get('/course/getAllCourses',getAllCourses);
 router.delete('/course/deleteEnrolledCourse',authenticate,deleteEnrolledCourse);
 router.delete('/course/deleteInsCourse/:id',authenticate, authorizeRoles('instructor'),deleteInsCourse);
-
+router.post('/contact',userContact);
 
 
 

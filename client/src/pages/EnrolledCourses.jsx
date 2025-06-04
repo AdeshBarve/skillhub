@@ -10,6 +10,7 @@ const EnrolledCourses = () => {
   const { user, token } = useAuth();
   const [enrolledCourses, setEnrolledCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [expandedVideoId, setExpandedVideoId] = useState(null);
 
   useEffect(() => {
     fetchEnrolledCourses();
@@ -25,18 +26,17 @@ const EnrolledCourses = () => {
           },
         }
       );
-      console.log("Response ", res.data);
       setEnrolledCourses(res.data);
-      setLoading(false);
     } catch (err) {
       console.error("Failed to fetch enrolled courses:", err);
+    } finally {
       setLoading(false);
     }
   };
 
   const handleUnenroll = async (courseId) => {
     try {
-      if (!window.confirm("Are you sure you want to delete this course?"))
+      if (!window.confirm("Are you sure you want to unenroll from this course?"))
         return;
 
       const response = await axios.delete(
@@ -47,10 +47,7 @@ const EnrolledCourses = () => {
           },
         }
       );
-      console.log("Response :", response.data.message);
       toast.success(response.data.message);
-
-      // Remove course from UI
       setEnrolledCourses((prev) =>
         prev.filter((course) => course._id !== courseId)
       );
@@ -62,8 +59,10 @@ const EnrolledCourses = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-white p-6">
       <ToastContainer position="top-right" autoClose={3000} />
-      <div className="bg-gray-800 p-4 rounded-lg shadow">
-        <h2 className="text-xl font-semibold mb-4 text-blue-300">
+
+      {/* Enrolled Courses */}
+      <div className="bg-gray-800 p-4 rounded-lg shadow mb-10">
+        <h2 className="text-xl font-semibold mb-4 text-purple-300">
           Enrolled Courses
         </h2>
         {loading ? (
@@ -72,20 +71,45 @@ const EnrolledCourses = () => {
           enrolledCourses.map((course) => (
             <div
               key={course._id}
-              className="mb-3 border-b border-gray-700 pb-2 flex justify-between items-center"
+              className="mb-5 border-b border-gray-700 pb-4"
             >
-              <div>
-                <p className="text-lg">{course.title}</p>
-                <p className="text-sm text-gray-400">
-                  Progress: {course.progress || "0%"}
-                </p>
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-lg font-bold text-white">{course.title}</p>
+                  <p className="text-sm text-gray-400 mb-2">
+                    Progress: {course.progress || "0%"}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleUnenroll(course._id)}
+                  className="bg-red-600 text-white text-sm px-3 py-1 rounded hover:bg-red-700"
+                >
+                  Unenroll
+                </button>
               </div>
-              <button
-                onClick={() => handleUnenroll(course._id)}
-                className="bg-red-600 text-white text-sm px-3 py-1 rounded hover:bg-red-700"
-              >
-                Unenroll
-              </button>
+
+              {/* Video Player */}
+              {course.videoUrl && (
+                <div className="mt-3">
+                  <video
+                    controls
+                    className={`transition-all duration-300 rounded shadow ${
+                      expandedVideoId === course._id ? "w-full h-auto" : "w-40 h-24"
+                    }`}
+                    src={course.videoUrl}
+                  />
+                  <button
+                    onClick={() =>
+                      setExpandedVideoId(
+                        expandedVideoId === course._id ? null : course._id
+                      )
+                    }
+                    className="mt-2 text-blue-400 hover:underline text-sm"
+                  >
+                    {expandedVideoId === course._id ? "Minimize" : "Watch"}
+                  </button>
+                </div>
+              )}
             </div>
           ))
         ) : (

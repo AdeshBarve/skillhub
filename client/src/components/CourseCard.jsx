@@ -2,7 +2,7 @@ import React from 'react';
 
 const CourseCard = ({ title, instructor, image }) => {
   return (
-    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+    <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-300">
       <img src={image} alt={title} className="w-full h-48 object-cover" />
       <div className="p-6">
         <h3 className="text-xl font-semibold text-gray-800">{title}</h3>

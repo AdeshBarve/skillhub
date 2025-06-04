@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-  import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 const CourseDetails = () => {
@@ -10,45 +10,41 @@ const CourseDetails = () => {
   const [course, setCourse] = useState(null);
   const [error, setError] = useState(null);
   const { token } = useAuth();
-  const [instructor,setInstructor]=useState();
+  const [instructor, setInstructor] = useState();
   const navigate = useNavigate();
 
-useEffect(() => {
-  const fetchCourse = async () => {
-    try {
-      const res = await axios.get(`http://localhost:5000/api/auth/course/getCourse/${id}`);
-      const instructorId=res.data[0].instructor;
-      // ✅ Fix: Access the first item from the array
-      if (Array.isArray(res.data) && res.data.length > 0) {
-        setCourse(res.data[0]);
-
-      } else {
-        setError('Course not found');
+  useEffect(() => {
+    const fetchCourse = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/auth/course/getCourse/${id}`);
+        const instructorId = res.data[0].instructor;
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          setCourse(res.data[0]);
+        } else {
+          setError('Course not found');
+        }
+        fetchInstructor(instructorId);
+      } catch (err) {
+        setError('Could not fetch course');
       }
-      fetchInstructor(instructorId);
-    } catch (err) {
-      setError('Could not fetch course');
-    }
-  };
-  const fetchInstructor=async(instructorId)=>{
-    try {
-     const response = await axios(`http://localhost:5000/api/auth/course/getInstructorName/${instructorId}`);
-     setInstructor(response.data);
-    }
-      catch(err){
-        console.log("Error :",err.response);
-              setError('Could not fetch course',err);
+    };
+
+    const fetchInstructor = async (instructorId) => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/auth/course/getInstructorName/${instructorId}`);
+        setInstructor(response.data);
+      } catch (err) {
+        console.log("Error:", err.response);
+        setError('Could not fetch instructor');
       }
-  } 
- 
-  fetchCourse();
+    };
 
-}, [id, token]);
+    fetchCourse();
+  }, [id, token]);
 
-  
   const handleEnroll = async () => {
     try {
-     const response = await axios.post(
+      const response = await axios.post(
         `http://localhost:5000/api/auth/course/enroll/${id}`,
         {},
         {
@@ -57,36 +53,41 @@ useEffect(() => {
           },
         }
       );
-      
-    toast.success(response.data.message);
-
-      // navigate('/dashboard');
+      toast.success(response.data.message);
     } catch (err) {
-      alert(err.response.data.message);
+      toast.error(err.response?.data?.message || 'Enrollment failed');
     }
   };
 
-  if (error) return <div className="text-center text-red-500">{error}</div>;
+  if (error) return <div className="text-center text-red-500 mt-10">{error}</div>;
 
-  if (!course) return <div className="text-center text-gray-600">Loading...</div>;
-
-  
-  
+  if (!course) return <div className="text-center text-gray-400 mt-10">Loading course details...</div>;
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4 bg-white shadow rounded">
-                  <ToastContainer position="top-right" autoClose={3000} />
-      <h2 className="text-3xl font-bold mb-4">{course.title}</h2>
-            <p className="text-gray-600 mb-2"><strong>Instructor:</strong> {instructor?.name}</p>
-      <p className="text-gray-700 mb-4"><strong>Description:</strong> {course.description}</p>
-      <p className="text-green-600 font-semibold mb-6"><strong>Price:</strong> ₹{course.price}</p>
+    <div className="min-h-screen bg-gray-100 py-10 px-4">
+      <ToastContainer position="top-right" autoClose={3000} />
+      <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8 border border-gray-200">
+        <h2 className="text-3xl font-bold text-gray-800 mb-4">{course.title}</h2>
+        
+        <p className="text-md text-gray-500 mb-2">
+          <span className="font-semibold text-gray-700">Instructor:</span> {instructor?.name}
+        </p>
+        
+        <p className="text-gray-700 mb-4">
+          <span className="font-semibold">Description:</span> {course.description}
+        </p>
 
-      <button
-        onClick={handleEnroll}
-        className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-      >
-        Enroll
-      </button>
+        <p className="text-green-600 text-lg font-semibold mb-6">
+          <span className="text-gray-700">Price:</span> ₹{course.price}
+        </p>
+
+        <button
+          onClick={handleEnroll}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-all duration-200 shadow-sm"
+        >
+          Enroll Now
+        </button>
+      </div>
     </div>
   );
 };

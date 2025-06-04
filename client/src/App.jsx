@@ -16,6 +16,8 @@ import CourseDetails from './pages/CourseDetails';
 
 // Optional: Import global styles (if you have any)
 import './App.css';
+import Footer from './components/Footer';
+import Contact from './pages/Contact';
 // import { AuthProvider } from './context/AuthContext';
 
 const App = () => {
@@ -33,9 +35,11 @@ const App = () => {
         <Route path="/courses/:id" element={<CourseDetails />} />
         {user?.role === 'student' && <Route path="/dashboard" element={<StudentDashboard />} />}
         {user?.role === 'instructor' && <Route path="/dashboard" element={<InstructorDashboard />} />}
-        
+        <Route path='/contact' element={<Contact/>}/>
         <Route path="*" element={<NotFound />} />
+       
       </Routes>
+       <Footer/>
     </Router>
   );
 };
