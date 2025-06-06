@@ -22,7 +22,7 @@ const Contact = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/contact', formData);
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/contact`, formData);
       toast.success(res.data.message || 'Query sent successfully!');
       console.log(res.data);
       setFormData({ name: '', email: '', phone: '', query: '' });

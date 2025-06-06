@@ -19,7 +19,7 @@ const EnrolledCourses = () => {
   const fetchEnrolledCourses = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/auth/course/enrolled",
+        `${import.meta.env.VITE_BACKEND_URL}/api/auth/course/enrolled`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -40,7 +40,7 @@ const EnrolledCourses = () => {
         return;
 
       const response = await axios.delete(
-        `http://localhost:5000/api/auth/course/deleteEnrolledCourse/${courseId}`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/auth/course/deleteEnrolledCourse/${courseId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

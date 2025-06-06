@@ -21,7 +21,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:5000/api/auth/user/login', form);
+      const res = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/auth/user/login`, form);
 
       if (res.data.token && res.data.user) {
         // Save token + user in context

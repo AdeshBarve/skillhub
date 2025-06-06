@@ -10,7 +10,7 @@ const Home = () => {
   useEffect(() => {
     const fetchCourses = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/auth/course/getAllCourses');
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/course/getAllCourses`);
         setCourses(res.data);
       } catch (err) {
         console.error('Error fetching courses:', err);

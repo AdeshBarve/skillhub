@@ -33,7 +33,7 @@ const InstructorDashboard = () => {
   const fetchCourses = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/auth/course/getInsCourses/${user.id}`
+        `${import.meta.env.VITE_BACKEND_URL}/api/auth/course/getInsCourses/${user.id}`
       );
       setCourses(res.data);
     } catch (err) {
@@ -65,7 +65,7 @@ const InstructorDashboard = () => {
     try {
       if (editingCourseId) {
         await axios.put(
-          `http://localhost:5000/api/auth/course/updateCourse/${editingCourseId}`,
+          `${import.meta.env.VITE_BACKEND_URL}/api/auth/course/updateCourse/${editingCourseId}`,
           formData,
           {
             headers: {
@@ -77,7 +77,7 @@ const InstructorDashboard = () => {
         toast.success("Course updated successfully!");
       } else {
         await axios.post(
-          "http://localhost:5000/api/auth/course/createCourse",
+          `${import.meta.env.VITE_BACKEND_URL}/api/auth/course/createCourse`,
           formData,
           {
             headers: {
@@ -122,7 +122,7 @@ const InstructorDashboard = () => {
     if (!window.confirm("Are you sure you want to delete this course?")) return;
     try {
       await axios.delete(
-        `http://localhost:5000/api/auth/course/deleteInsCourse/${courseId}`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/auth/course/deleteInsCourse/${courseId}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }

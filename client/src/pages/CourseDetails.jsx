@@ -16,7 +16,7 @@ const CourseDetails = () => {
   useEffect(() => {
     const fetchCourse = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/auth/course/getCourse/${id}`);
+        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/course/getCourse/${id}`);
         const instructorId = res.data[0].instructor;
         if (Array.isArray(res.data) && res.data.length > 0) {
           setCourse(res.data[0]);
@@ -31,7 +31,7 @@ const CourseDetails = () => {
 
     const fetchInstructor = async (instructorId) => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/auth/course/getInstructorName/${instructorId}`);
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/auth/course/getInstructorName/${instructorId}`);
         setInstructor(response.data);
       } catch (err) {
         console.log("Error:", err.response);
@@ -45,7 +45,7 @@ const CourseDetails = () => {
   const handleEnroll = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:5000/api/auth/course/enroll/${id}`,
+        `${import.meta.env.VITE_BACKEND_URL}/api/auth/course/enroll/${id}`,
         {},
         {
           headers: {
