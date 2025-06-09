@@ -26,7 +26,7 @@ const courseSchema = new mongoose.Schema(
     tags: [String], // Optional: ["JavaScript", "Web Dev"]
     price: {
       type: Number,
-      default: 0
+      default: 10000
     },
     isPublished: {
       type: Boolean,
